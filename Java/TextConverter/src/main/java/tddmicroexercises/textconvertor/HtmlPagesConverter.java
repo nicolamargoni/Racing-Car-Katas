@@ -1,56 +1,51 @@
 package tddmicroexercises.textconvertor;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HtmlPagesConverter {
+public class HtmlPagesConverter implements IPagesConverter {
+    public static final String PAGE_BREAK = "PAGE_BREAK";
+    public static final String HTML_TAG_BR = "<br />";
+    public static final String STRING_EMPTY = "";
 
-    private String filename;
-    private List<Integer> breaks = new ArrayList<Integer>();
-    
-    public HtmlPagesConverter(String filename) throws IOException {
-        this.filename = filename;
+    private ITextReader textReader;
+    private IEscapeString escapeString;
+    private List<Integer> breaks = new ArrayList<>();
 
+    public HtmlPagesConverter(ITextReader textReader, IEscapeString escapeString) throws IOException {
+        this.textReader = textReader;
+        this.escapeString = escapeString;
+    }
+
+    public void convert() {
         this.breaks.add(0);
-        BufferedReader reader = new BufferedReader(new FileReader(this.filename));
         int cumulativeCharCount = 0;
-        String line = reader.readLine();
-        while (line != null)
-        {
-            cumulativeCharCount += line.length() + 1; // add one for the newline
-            if (line.contains("PAGE_BREAK")) {
+        String textLine = textReader.readLine();
+        while (!textLine.equals(STRING_EMPTY)) {
+            cumulativeCharCount += textLine.length() + 1; // add one for the newline
+            if (textLine.contains(PAGE_BREAK)) {
                 int page_break_position = cumulativeCharCount;
                 breaks.add(page_break_position);
             }
-            line = reader.readLine();
+            textLine = textReader.readLine();
         }
-        reader.close();
     }
 
-    public String getHtmlPage(int page) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(this.filename));
-        reader.skip(breaks.get(page));
+    public String getPage(int page) throws IOException {
+        textReader.skip(breaks.get(page));
         StringBuffer htmlPage = new StringBuffer();
-        String line = reader.readLine();
-        while (line != null)
-        {
-            if (line.contains("PAGE_BREAK")) {
+        String textLine = textReader.readLine();
+        while (textLine != STRING_EMPTY) {
+            if (textLine.contains(PAGE_BREAK)) {
                 break;
             }
-            htmlPage.append(StringEscapeUtils.escapeHtml(line));
-            htmlPage.append("<br />");
-            
-            line = reader.readLine();
+            htmlPage.append(escapeString.escape(textLine));
+            htmlPage.append(HTML_TAG_BR);
+
+            textLine = textReader.readLine();
         }
-        reader.close();
+        textReader.close();
         return htmlPage.toString();
     }
-
-    public String getFilename() {
-        return this.filename;
-    }
-    
 }
