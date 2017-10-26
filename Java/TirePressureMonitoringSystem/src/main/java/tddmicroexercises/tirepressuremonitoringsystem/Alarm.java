@@ -17,7 +17,7 @@ public class Alarm {
         }
     }
 
-    public boolean isPressureValueOutOfTheThreshold(){
+    private boolean isPressureValueOutOfTheThreshold(){
         double psiPressureValue = sensor.popNextPressurePsiValue();
         return psiPressureValue < LOW_PRESSURE_THRESHOLD || HIGH_PRESSURE_THRESHOLD < psiPressureValue;
     }
